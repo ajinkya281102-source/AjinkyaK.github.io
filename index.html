@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajinkya Krishnaswami | Legal Engineer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@700&display=swap');
+
+        :root {
+            --bg-dark: #070707;
+            --bg-panel: #111111;
+            --text-main: #f1f1f1;
+            --text-muted: #888888;
+            --accent: #e5e5e5;
+            --border: #2a2a2a;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Cursor Glow */
+        #glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Custom Cursor Elements */
+        .cursor-dot {
+            position: fixed;
+            width: 6px; height: 6px;
+            background: var(--text-main);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .cursor-ring {
+            position: fixed;
+            width: 34px; height: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9998;
+            transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s;
+        }
+        .cursor-hover {
+            width: 60px; height: 60px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-main);
+        }
+
+        /* App Container for Sliding Views */
+        #app-container {
+            position: relative;
+            width: 100vw;
+            min-height: 100vh;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* View Panels */
+        .view-panel {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            min-height: 100vh;
+            padding: 4rem 10vw;
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .view-panel.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(0);
+        }
+        #dashboard { transform: translateX(-50px); }
+        .slide-out-left { transform: translateX(-100%) !important; opacity: 0 !important; }
+        .slide-in-right { transform: translateX(100%); }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 2rem;
+            margin-bottom: 4rem;
+            position: relative;
+            z-index: 10;
+        }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        nav a:hover { color: var(--text-main); }
+
+        /* Hero Section */
+        .hero-header {
+            margin-bottom: 3rem;
+        }
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 8vw, 6rem);
+            line-height: 1;
+            letter-spacing: -2px;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Skills Ticker */
+        .skills-ribbon {
+            width: 100%;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            margin-bottom: 4rem;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .skills-ribbon span::before {
+            content: '•';
+            color: var(--highlight);
+            margin-right: 10px;
+        }
+        .skills-ribbon span:first-child::before { display: none; }
+
+        /* Profile & Summary Layout */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 3rem;
+            align-items: start;
+            margin-bottom: 5rem;
+        }
+        
+        /* Bulletproof Image Container */
+        .image-wrapper {
+            width: 140px;
+            height: 140px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0; left: 0;
+        }
+        .image-fallback {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .summary p {
+            font-size: 1.2rem;
+            line-height: 1.7;
+            color: #d1d1d1;
+            max-width: 800px;
+        }
+        .summary strong {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        /* Interactive Dashboard Cards */
+        .section-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .interactive-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 2.5rem 2rem;
+            text-align: left;
+            color: var(--text-main);
+            font-family: inherit;
+            position: relative;
+            transition: all 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+        }
+        .interactive-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .card-action {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--highlight);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        .interactive-card:hover .card-action {
+            opacity: 1;
+            gap: 15px; /* Creates a slide arrow effect */
+        }
+
+        /* Dossier Detail Views (The Slides) */
+        .dossier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2rem;
+        }
+        .back-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .back-btn:hover {
+            background: var(--text-main);
+            color: var(--bg-dark);
+        }
+        
+        .dossier-content h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .dossier-content h3 {
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .star-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 900px;
+        }
+        .star-box {
+            background: var(--bg-panel);
+            border-left: 3px solid var(--border);
+            padding: 2rem;
+            transition: border-color 0.3s;
+        }
+        .star-box:hover {
+            border-color: var(--highlight);
+        }
+        .star-box h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .star-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #d1d1d1;
+        }
+        .metric {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            * { cursor: auto; }
+            .cursor-dot, .cursor-ring, #glow { display: none; }
+            .profile-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .view-panel { padding: 2rem 5vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="glow"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+
+    <div id="app-container">
+        
+        <!-- MAIN DASHBOARD -->
+        <div id="dashboard" class="view-panel active">
+            <nav>
+                <a href="mailto:ajinkya281102@gmail.com" class="hover-target">Email</a>
+                <a href="https://www.linkedin.com/in/ajinkya-krishnaswami-697446219/" target="_blank" class="hover-target">LinkedIn</a>
+            </nav>
+
+            <header class="hero-header">
+                <h1>Ajinkya Krishnaswami</h1>
+                <div class="subtitle">Emerging Tech & Data Privacy Specialist • Legal Engineer</div>
+            </header>
+
+            <div class="skills-ribbon">
+                <span>UK GDPR</span>
+                <span>Data Protection Act 2018</span>
+                <span>AI Governance & Ethics</span>
+                <span>DPIA & DSAR Operations</span>
+                <span>Contract Lifecycle Management</span>
+                <span>Web3 Cyberlaw</span>
+            </div>
+
+            <div class="profile-grid">
+                <div class="image-wrapper">
+                    <!-- Text fallback ensures layout holds even if image breaks -->
+                    <div class="image-fallback">Photo Loading...</div>
+                    <img src="image_ba5087.jpg" alt="Ajinkya Krishnaswami Profile">
+                </div>
+                <div class="summary">
+                    <p>
+                        I build the legal infrastructure that allows technical innovation to scale safely. Aligning with the accelerationist frameworks of <strong>Yann LeCun</strong> and <strong>Jensen Huang</strong>, I treat data privacy and AI governance as critical business enablers, not compliance roadblocks. My focus is deploying operational systems that allow engineering teams to build fast, secure commercial partnerships, and deploy agentic AI confidently without regulatory friction.
+                    </p>
+                </div>
+            </div>
+
+            <div class="section-label">Operational Domains // Select for Metrics</div>
+            
+            <div class="card-grid">
+                <button class="interactive-card hover-target" onclick="openDossier('dossier-dsar')">
+                    <div class="card-title">Privacy Operations & Incident Response</div>
+                    <div class="card-action">View DPIA & DSAR Metrics →</div>
+                </button>
+
+                <button class="interactive-card hover-target" onclick="openDossier('dossier-clm')">
+                    <div class="card-title">Commercial Agreements & Tech</div>
+                    <div class="card-action">View CLM Frameworks →</div>
+                </button>
+
+                <button class="interactive-card hover-target" onclick="openDossier('dossier-ropa')">
+                    <div class="card-title">Compliance Architecture</div>
+                    <div class="card-action">View ROPA Audits →</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- DOSSIER 1: DSAR/DPIA -->
+        <div id="dossier-dsar" class="view-panel slide-in-right">
+            <div class="dossier-header">
+                <div class="section-label">Domain Expertise Breakdown</div>
+                <button class="back-btn hover-target" onclick="closeDossiers()">← Return to Dashboard</button>
+            </div>
+            <div class="dossier-content">
+                <h2>Scriboard</h2>
+                <h3>Technology Law and Data Protection Associate | Mar 2024 - Feb 2025</h3>
+                
+                <div class="star-layout">
+                    <div class="star-box">
+                        <h4>Situation</h4>
+                        <p>Technical teams required the rapid deployment of new software tools while concurrently facing a massive backlog of privacy requests that threatened to bottleneck engineering timelines.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Task</h4>
+                        <p>Clear the request backlog securely, evaluate the regulatory risks of all new technology integrations, and ensure product launches remained strictly on schedule.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Action</h4>
+                        <p>Executed 45 rapid <strong>Data Protection Impact Assessments (DPIAs)</strong> for new tech deployments. Concurrently, directed the end-to-end lifecycle of 80+ complex <strong>Data Subject Access Requests (DSARs)</strong> utilizing precise redaction protocols across highly sensitive datasets.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Result</h4>
+                        <p>Processed over <span class="metric">15,000 records</span> securely and reduced response times for the Office of the DPO by <span class="metric">35%</span>, enabling product teams to launch without regulatory friction.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DOSSIER 2: CLM -->
+        <div id="dossier-clm" class="view-panel slide-in-right">
+            <div class="dossier-header">
+                <div class="section-label">Domain Expertise Breakdown</div>
+                <button class="back-btn hover-target" onclick="closeDossiers()">← Return to Dashboard</button>
+            </div>
+            <div class="dossier-content">
+                <h2>SB Tech Associates</h2>
+                <h3>Legal Research & Cyberlaw Analyst | Mar 2023 - Feb 2024</h3>
+                
+                <div class="star-layout">
+                    <div class="star-box">
+                        <h4>Situation</h4>
+                        <p>Third-party vendor agreements lacked standardized privacy clauses, creating severe commercial exposure to unauthorized data transfer risks across the matrix.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Task</h4>
+                        <p>Overhaul the vendor onboarding architecture and enforce strict data protection standards across four separate departments.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Action</h4>
+                        <p>Implemented a comprehensive <strong>Contract Lifecycle Management (CLM)</strong> framework to systematically audit vendor contracts and data sharing agreements. Translated complex privacy rules into clear, actionable compliance steps for commercial stakeholders.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Result</h4>
+                        <p>Successfully audited <span class="metric">120+ contracts</span> and maintained a <span class="metric">100% success rate</span> in meeting statutory deadlines, effectively securing external data pipelines.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DOSSIER 3: ROPA -->
+        <div id="dossier-ropa" class="view-panel slide-in-right">
+            <div class="dossier-header">
+                <div class="section-label">Domain Expertise Breakdown</div>
+                <button class="back-btn hover-target" onclick="closeDossiers()">← Return to Dashboard</button>
+            </div>
+            <div class="dossier-content">
+                <h2>Scriboard</h2>
+                <h3>Junior Legal Operations & Data Privacy | Mar 2022 - Mar 2023</h3>
+                
+                <div class="star-layout">
+                    <div class="star-box">
+                        <h4>Situation</h4>
+                        <p>Internal data mapping and compliance reporting were deeply fragmented across five separate business units right before critical legal audits.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Task</h4>
+                        <p>Centralize data repositories and build a transparent tracking system to prove compliance with the Data Protection Act 2018.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Action</h4>
+                        <p>Completely overhauled the <strong>Record of Processing Activities (ROPA)</strong> and engineered automated tracking frameworks designed to retrieve sensitive personal data efficiently.</p>
+                    </div>
+                    <div class="star-box">
+                        <h4>Result</h4>
+                        <p>Achieved a <span class="metric">zero-finding result</span> during internal audits and accelerated the retrieval of sensitive data by <span class="metric">40%</span>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Custom Cursor Logic
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorRing = document.querySelector('.cursor-ring');
+        const glow = document.getElementById('glow');
+        const hoverTargets = document.querySelectorAll('.hover-target');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            
+            cursorRing.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 150, fill: "forwards" });
+
+            glow.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 800, fill: "forwards" });
+        });
+
+        hoverTargets.forEach(target => {
+            target.addEventListener('mouseenter', () => cursorRing.classList.add('cursor-hover'));
+            target.addEventListener('mouseleave', () => cursorRing.classList.remove('cursor-hover'));
+        });
+
+        // View Navigation Logic (The SPA Immersive Slide Effect)
+        const dashboard = document.getElementById('dashboard');
+        const dossiers = document.querySelectorAll('.view-panel:not(#dashboard)');
+
+        function openDossier(dossierId) {
+            // Slide dashboard out to the left
+            dashboard.classList.remove('active');
+            dashboard.classList.add('slide-out-left');
+            
+            // Bring specific dossier in from the right
+            const targetDossier = document.getElementById(dossierId);
+            targetDossier.classList.remove('slide-in-right');
+            targetDossier.classList.add('active');
+            
+            // Scroll to top automatically for a clean view
+            window.scrollTo(0, 0);
+        }
+
+        function closeDossiers() {
+            // Push all dossiers back to the right
+            dossiers.forEach(d => {
+                d.classList.remove('active');
+                d.classList.add('slide-in-right');
+            });
+            
+            // Bring dashboard back from the left
+            dashboard.classList.remove('slide-out-left');
+            dashboard.classList.add('active');
+            
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
